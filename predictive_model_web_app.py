@@ -98,6 +98,8 @@ if st.checkbox("Show Individual Explanation (SHAP)"):
     if models:
         try:
             # 1. 禁用数学字符解析，防止 LaTeX 报错
+            # plt.rcParams['mathtext.default'] = 'regular'
+            plt.rcParams['mathtext.fontset'] = 'custom'
             plt.rcParams['mathtext.default'] = 'regular'
             
             # 2. 获取 SHAP 值
