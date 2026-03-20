@@ -38,21 +38,24 @@ models = load_models(MODEL_PATH, MODEL_FILES)
 @st.cache_data
 def get_validation_data():
     np.random.seed(42)
-    n_samples = 200
-    X_val = pd.DataFrame({
-        'Age': np.random.randint(40, 90, n_samples),
-        'Treatment_arms': np.random.randint(0, 2, n_samples),
-        'NIHSS_admission': np.random.randint(5, 30, n_samples),
-        'intravenous thrombolysis': np.random.randint(0, 2, n_samples),
-        'NIHSS_rate_day7': np.random.uniform(0, 100, n_samples),
-        'GCS_rate_day7': np.random.uniform(0, 100, n_samples),
-        'Visible_cerebral_infarction_lesion': np.random.randint(0, 2, n_samples)
-    })
-    X_val = X_val[feature_order] # 确保顺序
+    n_samples = 300 # 样本量稍微多一点，AUC 更平滑
     
-    # 构造线性关系：NIHSS 越高，Unfavorable (1) 概率越高
-    # 这样当我们人为偏移 NIHSS 或 Age 时，预测概率会剧烈变动，从而影响 AUC
-    logit = (X_val['NIHSS_admission'] * 0.15 + X_val['Age'] * 0.05 - 8)
+    # 构造特征
+    data = {
+        'Age': np.random.normal(65, 12, n_samples),
+        'Treatment_arms': np.random.randint(0, 2, n_samples),
+        'NIHSS_admission': np.random.normal(15, 7, n_samples),
+        'intravenous thrombolysis': np.random.randint(0, 2, n_samples),
+        'NIHSS_rate_day7': np.random.uniform(20, 80, n_samples),
+        'GCS_rate_day7': np.random.uniform(20, 90, n_samples),
+        'Visible_cerebral_infarction_lesion': np.random.randint(0, 2, n_samples)
+    }
+    X_val = pd.DataFrame(data)[feature_order]
+    
+    # 关键：创建一个基于逻辑回归的标签，使其对 NIHSS 和 Age 极度敏感
+    # 公式：logit = beta0 + beta1*Age + beta2*NIHSS ...
+    # 我们故意放大 NIHSS 的权重，这样当你偏移 NIHSS 时，AUC 会崩得很厉害
+    logit = (X_val['NIHSS_admission'] * 0.4 + X_val['Age'] * 0.08 - 10)
     prob = 1 / (1 + np.exp(-logit))
     y_val = (prob > np.random.rand(n_samples)).astype(int)
     
@@ -130,41 +133,56 @@ if st.checkbox("Show SHAP explanation"):
         except Exception as e:
             st.error(f"SHAP visualization error: {e}")
             st.write("Tip: This might be due to a font rendering issue in the current environment.")
-# --- 6. 动态 AUC 变化 (修复不更新问题) ---
+# --- 6. 动态 AUC 变化 ---
 st.divider()
-st.subheader("Model Stability Analysis (Dynamic AUC)")
+st.subheader("📊 Model Stability Analysis (Dynamic AUC)")
 
-X_test, y_test = get_validation_data()
+# 获取原始测试集
+X_test_raw, y_test = get_validation_data()
 
-# 增加调节范围：选择要偏移的特征
-target_feat = st.selectbox("Select Feature to Shift", feature_order)
-shift_val = st.slider(f"Shift {target_feat} value in test set", -30.0, 30.0, 0.0, step=1.0)
+# 侧边栏/主界面选择偏移
+target_feat = st.selectbox("Select Feature to Shift", feature_order, index=2) # 默认选 NIHSS_admission
+shift_val = st.slider(f"Shift {target_feat} value", -30.0, 30.0, 0.0, step=1.0)
 
-# 实时计算修改后的数据
-X_test_modified = X_test.copy()
+# 创建副本并应用偏移
+X_test_modified = X_test_raw.copy()
 X_test_modified[target_feat] = X_test_modified[target_feat] + shift_val
 
-# 预测
-if models:
-    # 对所有 Fold 求平均概率
-    y_probs = np.mean([m.predict_proba(X_test_modified)[:, 1] for m in models], axis=0)
-    current_auc = roc_auc_score(y_test, y_probs)
+# 预测部分 - 增加 spinner 提示并强制执行
+with st.spinner('Updating AUC calculation...'):
+    if models:
+        # 核心：确保输入类型为 float，并保持 feature_order 顺序
+        # 计算 5 折平均概率
+        fold_probs = []
+        for m in models:
+            p = m.predict_proba(X_test_modified[feature_order].astype(float))[:, 1]
+            fold_probs.append(p)
+        
+        y_probs = np.mean(fold_probs, axis=0)
+        
+        # 计算当前 AUC
+        current_auc = roc_auc_score(y_test, y_probs)
 
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        st.metric("Current AUC", f"{current_auc:.4f}")
-        st.info(f"The AUC reflects the model's accuracy on the test set when all patients' **{target_feat}** is adjusted by **{shift_val}** units.")
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            st.metric("Current AUC", f"{current_auc:.4f}", delta=f"{current_auc - 0.5:.4f}" if current_auc != 0.5 else None)
+            st.write(f"**Explanation:**")
+            st.write(f"You adjusted the **{target_feat}** for all patients by **{shift_val}** units.")
+            st.info("If the AUC drops significantly, it means the model is sensitive to this feature's distribution shift.")
 
-    with col2:
-        fpr, tpr, _ = roc_curve(y_test, y_probs)
-        fig_roc, ax_roc = plt.subplots(figsize=(6, 4))
-        ax_roc.plot(fpr, tpr, label=f'ROC curve (AUC = {current_auc:.2f})', color='darkorange', lw=2)
-        ax_roc.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-        ax_roc.set_xlabel('False Positive Rate')
-        ax_roc.set_ylabel('True Positive Rate')
-        ax_roc.set_title('Receiver Operating Characteristic')
-        ax_roc.legend(loc="lower right")
-        st.pyplot(fig_roc)
+        with col2:
+            # 绘制曲线
+            fpr, tpr, _ = roc_curve(y_test, y_probs)
+            fig_roc, ax_roc = plt.subplots(figsize=(6, 4))
+            ax_roc.plot(fpr, tpr, label=f'ROC curve (AUC = {current_auc:.2f})', color='darkorange', lw=2)
+            ax_roc.plot([0, 1], [0, 1], color='navy', lw=1, linestyle='--')
+            ax_roc.set_xlim([0.0, 1.0])
+            ax_roc.set_ylim([0.0, 1.05])
+            ax_roc.set_xlabel('False Positive Rate')
+            ax_roc.set_ylabel('True Positive Rate')
+            ax_roc.set_title('Dynamic ROC Curve')
+            ax_roc.legend(loc="lower right")
+            st.pyplot(fig_roc)
 
 
 
