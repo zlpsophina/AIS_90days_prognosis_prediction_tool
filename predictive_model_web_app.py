@@ -106,11 +106,9 @@ if st.checkbox("Show Individual Explanation (SHAP)"):
             shap_values = explainer.shap_values(instance)
             
             # 3. 重点：先建立一个足够宽的 Figure
-            # 宽度设为 20（极大缓解重叠），高度 3 足够
-            fig = plt.figure(figsize=(20, 3))
+            # 宽度设为 20，高度 5 
+            fig = plt.figure(figsize=(20, 5))
             
-            # 4. 调用 force_plot
-            # 不要传 ax，但要确保 matplotlib=True 和 show=False
             shap.force_plot(
                 explainer.expected_value,
                 shap_values[0],
@@ -123,7 +121,7 @@ if st.checkbox("Show Individual Explanation (SHAP)"):
             # 5. 关键：通过 gcf() (Get Current Figure) 获取 SHAP 刚刚画好的图
             # 并手动调整布局，为长特征名留出左右边距
             current_fig = plt.gcf()
-            current_fig.set_size_inches(20, 3) # 再次强制尺寸
+            current_fig.set_size_inches(20, 5) # 再次强制尺寸
             plt.tight_layout(pad=2.0) # 增加边距
             
             # 6. 显示
