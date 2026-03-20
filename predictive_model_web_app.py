@@ -94,38 +94,47 @@ if st.button("Predict Outcome"):
 # --- 6. SHAP 部分 (解决重叠问题) ---
 st.divider()
 if st.checkbox("Show Individual Explanation (SHAP)"):
-    st.subheader("Individual Feature Contribution")
+    st.subheader("Individual Feature Contribution (SHAP)")
     if models:
         try:
+            # 1. 禁用数学字符解析，防止 LaTeX 报错
             plt.rcParams['mathtext.default'] = 'regular'
-            plt.clf()
+            
+            # 2. 获取 SHAP 值
             explainer = shap.TreeExplainer(models[0])
-            shap_values = explainer.shap_values(input_df.astype(float))
+            # 强制转换为 float64 并确保 DataFrame 格式
+            instance = input_df.astype(float)
+            shap_values = explainer.shap_values(instance)
             
-            # 解决重叠的关键措施：
-            # 1. 显式设置更大的 figsize (宽度15保证展开，高度6给文字留空间)
-            fig = plt.figure(figsize=(15, 6)) 
+            # 3. 显式创建 matplotlib Figure 和 Axes
+            # 增加 figsize 宽度到 18，高度到 4，这能极大缓解标签重叠
+            fig, ax = plt.subplots(figsize=(18, 4))
             
-            # 2. 调用 force_plot，核心参数：
-            # contribution_threshold: 只有贡献度超过5%的特征才显示名称，减少拥挤
-            # text_rotation: 如果还是重叠，可以改为 30 或 45 度，但 0 度配合大 figsize 通常更清晰
+            # 4. 核心修复：将绘图目标指向上面创建的 ax
+            # link='logit' 可以让坐标轴更符合概率分布逻辑
             shap.force_plot(
                 explainer.expected_value,
                 shap_values[0],
-                input_df.iloc[0, :],
+                instance.iloc[0, :],
                 matplotlib=True,
                 show=False,
-                contribution_threshold=0.05, 
-                text_rotation=0 
+                contribution_threshold=0.05, # 只显示贡献大的特征标签，防止拥挤
+                ax=ax # 关键：强制画在指定的 ax 上
             )
             
-            # 3. 强制调整子图边距，为底部和顶部的特征文字预留空间
-            plt.subplots_adjust(top=0.7, bottom=0.3) 
+            # 5. 解决标签重叠的额外微调
+            # 减小坐标轴标签字体
+            plt.tick_params(axis='x', labelsize=9)
             
-            st.pyplot(fig)
-            st.write("🔴 Red: Factors increasing risk | 🔵 Blue: Factors decreasing risk")
+            # 6. 显示到 Streamlit
+            st.pyplot(fig, clear_figure=True)
+            
+            st.write("🔴 **Red**: Features that increase the risk of Unfavorable Outcome.")
+            st.write("🔵 **Blue**: Features that increase the chance of Favorable Outcome.")
+            
         except Exception as e:
-            st.error(f"SHAP Error: {e}")
+            st.error(f"SHAP Plotting Error: {e}")
+            st.info("Technical Tip: Try reducing the number of features or simplifying labels if overlap persists.")
             
 st.divider()
 st.subheader("📊 Model Stability Analysis (Dynamic AUC)")
