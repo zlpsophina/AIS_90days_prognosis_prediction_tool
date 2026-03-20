@@ -91,49 +91,42 @@ if st.button("Predict Outcome"):
     st.markdown(f"### Result: {'🔴 Unfavorable' if avg_prob > 0.5 else '🟢 Favorable'}")
     st.metric("Risk Probability", f"{avg_prob:.2%}")
 
+# --- 6. SHAP 部分 (解决重叠问题) ---
 st.divider()
-
-if st.checkbox("Show SHAP explanation"):
-    st.subheader("Individual Feature Contribution (SHAP)")
-    if not models:
-        st.error("Model not loaded.")
-    else:
+if st.checkbox("Show Individual Explanation (SHAP)"):
+    st.subheader("Individual Feature Contribution")
+    if models:
         try:
-            # 1. 设置 Matplotlib 属性，禁用数学文本解析，防止解析错误
-            plt.rcParams['mathtext.default'] = 'regular' 
-            
-            # 2. 清理画布
+            plt.rcParams['mathtext.default'] = 'regular'
             plt.clf()
-            
-            # 3. 计算 SHAP
             explainer = shap.TreeExplainer(models[0])
-            # 确保数据类型为 float64
             shap_values = explainer.shap_values(input_df.astype(float))
             
-            # 4. 创建 Figure
-            # 增加 figsize 的高度，避免文字重叠，从而不需要 tight_layout
-            fig = plt.figure(figsize=(12, 5)) 
+            # 解决重叠的关键措施：
+            # 1. 显式设置更大的 figsize (宽度15保证展开，高度6给文字留空间)
+            fig = plt.figure(figsize=(15, 6)) 
             
-            # 5. 绘图
+            # 2. 调用 force_plot，核心参数：
+            # contribution_threshold: 只有贡献度超过5%的特征才显示名称，减少拥挤
+            # text_rotation: 如果还是重叠，可以改为 30 或 45 度，但 0 度配合大 figsize 通常更清晰
             shap.force_plot(
                 explainer.expected_value,
                 shap_values[0],
                 input_df.iloc[0, :],
                 matplotlib=True,
                 show=False,
-                text_rotation=0 # 强制文字水平，减少布局压力
+                contribution_threshold=0.05, 
+                text_rotation=0 
             )
             
-            # 6. 关键：移除 plt.tight_layout()，直接显示
-            # 在 Streamlit 中，pyplot 会自动处理边距
-            st.pyplot(plt.gcf())
+            # 3. 强制调整子图边距，为底部和顶部的特征文字预留空间
+            plt.subplots_adjust(top=0.7, bottom=0.3) 
             
+            st.pyplot(fig)
             st.write("🔴 Red: Factors increasing risk | 🔵 Blue: Factors decreasing risk")
-            
         except Exception as e:
-            st.error(f"SHAP visualization error: {e}")
-            st.write("Tip: This might be due to a font rendering issue in the current environment.")
-# --- 6. 动态 AUC 变化 ---
+            st.error(f"SHAP Error: {e}")
+            
 st.divider()
 st.subheader("📊 Model Stability Analysis (Dynamic AUC)")
 
