@@ -102,39 +102,37 @@ if st.checkbox("Show Individual Explanation (SHAP)"):
             
             # 2. 获取 SHAP 值
             explainer = shap.TreeExplainer(models[0])
-            # 强制转换为 float64 并确保 DataFrame 格式
             instance = input_df.astype(float)
             shap_values = explainer.shap_values(instance)
             
-            # 3. 显式创建 matplotlib Figure 和 Axes
-            # 增加 figsize 宽度到 18，高度到 4，这能极大缓解标签重叠
-            fig, ax = plt.subplots(figsize=(18, 4))
+            # 3. 重点：先建立一个足够宽的 Figure
+            # 宽度设为 20（极大缓解重叠），高度 3 足够
+            fig = plt.figure(figsize=(20, 3))
             
-            # 4. 核心修复：将绘图目标指向上面创建的 ax
-            # link='logit' 可以让坐标轴更符合概率分布逻辑
+            # 4. 调用 force_plot
+            # 不要传 ax，但要确保 matplotlib=True 和 show=False
             shap.force_plot(
                 explainer.expected_value,
                 shap_values[0],
                 instance.iloc[0, :],
                 matplotlib=True,
                 show=False,
-                contribution_threshold=0.05, # 只显示贡献大的特征标签，防止拥挤
-                ax=ax # 关键：强制画在指定的 ax 上
+                contribution_threshold=0.05 # 过滤掉贡献极小的特征标签，腾出空间
             )
             
-            # 5. 解决标签重叠的额外微调
-            # 减小坐标轴标签字体
-            plt.tick_params(axis='x', labelsize=9)
+            # 5. 关键：通过 gcf() (Get Current Figure) 获取 SHAP 刚刚画好的图
+            # 并手动调整布局，为长特征名留出左右边距
+            current_fig = plt.gcf()
+            current_fig.set_size_inches(20, 3) # 再次强制尺寸
+            plt.tight_layout(pad=2.0) # 增加边距
             
-            # 6. 显示到 Streamlit
-            st.pyplot(fig, clear_figure=True)
+            # 6. 显示
+            st.pyplot(current_fig, clear_figure=True)
             
-            st.write("🔴 **Red**: Features that increase the risk of Unfavorable Outcome.")
-            st.write("🔵 **Blue**: Features that increase the chance of Favorable Outcome.")
+            st.write("🔴 **Red**: Increases risk of Unfavorable Outcome | 🔵 **Blue**: Decreases risk")
             
         except Exception as e:
             st.error(f"SHAP Plotting Error: {e}")
-            st.info("Technical Tip: Try reducing the number of features or simplifying labels if overlap persists.")
             
 st.divider()
 st.subheader("📊 Model Stability Analysis (Dynamic AUC)")
