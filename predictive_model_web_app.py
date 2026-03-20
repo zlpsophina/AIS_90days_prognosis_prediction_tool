@@ -95,27 +95,41 @@ if st.checkbox("Show SHAP explanation"):
     if not models:
         st.error("Model not loaded.")
     else:
-        # 强制清除之前的图形
-        plt.clf()
-        # 对于 XGBoost，使用 TreeExplainer
-        explainer = shap.TreeExplainer(models[0])
-        # 这里的 input_df 必须是 float 类型，有些版本的 XGBoost 会因为 int 报错
-        shap_values = explainer.shap_values(input_df.astype(float))
-        
-        # 修复显示的核心：matplotlib=True 并且显式创建 fig
-        fig, ax = plt.subplots(figsize=(10, 3))
-        shap.force_plot(
-            explainer.expected_value,
-            shap_values[0],
-            input_df.iloc[0, :],
-            matplotlib=True,
-            show=False
-        )
-        # 调整布局防止文字重叠
-        plt.tight_layout()
-        st.pyplot(fig)
-        st.write("🔴 Red: Factors increasing risk | 🔵 Blue: Factors decreasing risk")
-
+        try:
+            # 1. 设置 Matplotlib 属性，禁用数学文本解析，防止解析错误
+            plt.rcParams['mathtext.default'] = 'regular' 
+            
+            # 2. 清理画布
+            plt.clf()
+            
+            # 3. 计算 SHAP
+            explainer = shap.TreeExplainer(models[0])
+            # 确保数据类型为 float64
+            shap_values = explainer.shap_values(input_df.astype(float))
+            
+            # 4. 创建 Figure
+            # 增加 figsize 的高度，避免文字重叠，从而不需要 tight_layout
+            fig = plt.figure(figsize=(12, 5)) 
+            
+            # 5. 绘图
+            shap.force_plot(
+                explainer.expected_value,
+                shap_values[0],
+                input_df.iloc[0, :],
+                matplotlib=True,
+                show=False,
+                text_rotation=0 # 强制文字水平，减少布局压力
+            )
+            
+            # 6. 关键：移除 plt.tight_layout()，直接显示
+            # 在 Streamlit 中，pyplot 会自动处理边距
+            st.pyplot(plt.gcf())
+            
+            st.write("🔴 Red: Factors increasing risk | 🔵 Blue: Factors decreasing risk")
+            
+        except Exception as e:
+            st.error(f"SHAP visualization error: {e}")
+            st.write("Tip: This might be due to a font rendering issue in the current environment.")
 # --- 6. 动态 AUC 变化 (修复不更新问题) ---
 st.divider()
 st.subheader("Model Stability Analysis (Dynamic AUC)")
