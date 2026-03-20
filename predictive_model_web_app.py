@@ -153,7 +153,7 @@ X_test, y_test = get_validation_data()
 
 # 逻辑：当用户在侧边栏调节特征时，我们观察“如果测试集中该特征发生偏移，AUC会如何变化”
 # 或者更常见的做法：根据用户选择的特征范围筛选测试集，查看子组 AUC
-shift_val = st.slider("Simulating the Impact of Feature Shift on AUC", -20, 20, 0.0)
+shift_val = st.slider("Simulating the Impact of Feature Shift on AUC", -20.0, 20.0, 0.0)
 
 # 简单的动态模拟：对测试集增加偏置
 X_test_modified = X_test.copy()
