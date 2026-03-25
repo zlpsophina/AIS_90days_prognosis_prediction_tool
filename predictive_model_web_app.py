@@ -225,7 +225,7 @@ with st.spinner('Updating AUC calculation...'):
         with col2:
             # 绘制曲线
             fpr, tpr, _ = roc_curve(y_test, y_probs)
-            fig_roc, ax_roc = plt.subplots(figsize=(5, 3))
+            fig_roc, ax_roc = plt.subplots(figsize=(4, 3))
             ax_roc.plot(fpr, tpr, label=f'ROC curve (AUC = {current_auc:.2f})', color='darkorange', lw=2)
             ax_roc.plot([0, 1], [0, 1], color='navy', lw=1, linestyle='--')
             ax_roc.set_xlim([0.0, 1.0])
