@@ -205,22 +205,57 @@ with st.spinner('Updating AUC calculation...'):
     if models:
         # 核心：确保输入类型为 float，并保持 feature_order 顺序
         # 计算 5 折平均概率
-        fold_probs = []
-        for m in models:
-            p = m.predict_proba(X_test_modified[feature_order].astype(float))[:, 1]
-            fold_probs.append(p)
+        # fold_probs = []
+        # for m in models:
+        #     p = m.predict_proba(X_test_modified[feature_order].astype(float))[:, 1]
+        #     fold_probs.append(p)
         
-        y_probs = np.mean(fold_probs, axis=0)
+        # y_probs = np.mean(fold_probs, axis=0)
         
-        # 计算当前 AUC
-        current_auc = roc_auc_score(y_test, y_probs)
+        # # 计算当前 AUC
+        # current_auc = roc_auc_score(y_test, y_probs)
 
+        # col1, col2 = st.columns([1, 2])
+        # with col1:
+        #     st.metric("Current AUC", f"{current_auc:.4f}", delta=f"{current_auc - 0.5:.4f}" if current_auc != 0.5 else None)
+        #     st.write(f"**Explanation:**")
+        #     st.write(f"You adjusted the **{target_feat}** for all patients by **{shift_val}** units.")
+        #     st.info("If the AUC drops significantly, it means the model is sensitive to this feature's distribution shift.")
+        individual_aucs = []
+        fold_probs = [] # 用于保留之前的平均预测逻辑（如果后续绘图需要）
+
+        for i, m in enumerate(models):
+            # 获取当前模型的预测概率
+            p = m.predict_proba(X_to_predict)[:, 1]
+            fold_probs.append(p)
+            
+            # 计算当前折的 AUC
+            auc_score = roc_auc_score(y_test, p)
+            individual_aucs.append(auc_score)
+        
+        # 3. 计算统计量
+        auc_mean = np.mean(individual_aucs)
+        auc_std = np.std(individual_aucs)
+        
+        # 用于绘图的平均概率
+        y_probs_avg = np.mean(fold_probs, axis=0)
+        current_auc_avg = roc_auc_score(y_test, y_probs_avg)
+
+        # 4. 界面显示
         col1, col2 = st.columns([1, 2])
         with col1:
-            st.metric("Current AUC", f"{current_auc:.4f}", delta=f"{current_auc - 0.5:.4f}" if current_auc != 0.5 else None)
+            # 显示均值和方差 (Standard Deviation)
+            st.metric("Mean AUC", f"{auc_mean:.4f}")
+            st.metric("AUC Std Dev", f"{auc_std:.4f}")
+            
+            # 也可以用小字列出每一折的具体数值
+            # with st.expander("View individual fold AUCs"):
+            #     for i, score in enumerate(individual_aucs):
+            #         st.write(f"Fold {i+1}: {score:.4f}")
+            
             st.write(f"**Explanation:**")
-            st.write(f"You adjusted the **{target_feat}** for all patients by **{shift_val}** units.")
-            st.info("If the AUC drops significantly, it means the model is sensitive to this feature's distribution shift.")
+            st.write(f"You adjusted **{target_feat}** by **{shift_val}** units.")
+            st.info("The Mean and Std Dev represent the stability across 5-fold cross-validation models.")
 
         with col2:
             # 绘制曲线
