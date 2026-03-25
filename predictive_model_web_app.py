@@ -64,7 +64,7 @@ def get_validation_data():
 # --- 4. 侧边栏输入 ---
 def user_input_features():
     st.sidebar.header("Patient Features")
-    age = st.sidebar.slider('Age', 0, 100, 65)
+    age = st.sidebar.number_input('Age', 0, 100, 65)
     treatment_val = st.sidebar.radio("Treatment_arms", [0, 1], format_func=lambda x: "Intervention (1)" if x==1 else "Control (0)")
     nihss_adm = st.sidebar.number_input('NIHSS_admission', 0, 42, 12)
     iv_throm_val = st.sidebar.radio("Intravenous Thrombolysis", [0, 1], format_func=lambda x: "YES (1)" if x==1 else "No (0)")
