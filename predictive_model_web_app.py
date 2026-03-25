@@ -31,7 +31,7 @@ col_l, col_m, col_r = st.columns([1, 6, 1])
 
 with col_l:
     # 第一个单位 Logo
-    st.image(logo1, width=80)
+    st.image(logo1, width=100)
 
 with col_m:
     # 两个单位名称及链接，使用 HTML 实现换行或并排
@@ -40,12 +40,12 @@ with col_m:
         <div style="text-align: center; line-height: 1.2;">
             <a href="https://istbi.fudan.edu.cn/ry/gdkyry_aszmpysx_.htm" target="_blank" 
                style="text-decoration: none; color: #1E1E1E; font-size: 1.8rem; font-weight: bold;">
-               The Institute of Science and Technology for Brain-inspired Intelligence (ISTBI)
+               FuDan University
             </a>
             <span style="margin: 0 15px; color: #CCC; font-size: 1.5rem;">|</span>
             <a href="https://www.university-b.edu" target="_blank" 
                style="text-decoration: none; color: #1E1E1E; font-size: 1.8rem; font-weight: bold;">
-               FuDan University
+               The Institute of Science and Technology for Brain-inspired Intelligence (ISTBI)
             </a>
         </div>
         """, 
@@ -54,7 +54,7 @@ with col_m:
 
 with col_r:
     # 第二个单位 Logo
-    st.image(logo2, width=80)
+    st.image(logo2, width=100)
 
 
 st.divider() # 添加一条分割线，使顶部与主体内容区分开
