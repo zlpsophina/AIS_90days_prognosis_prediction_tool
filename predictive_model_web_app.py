@@ -47,9 +47,6 @@ with col_m:
                style="text-decoration: none; color: #1E1E1E; font-size: 1.8rem; font-weight: bold;">
                FuDan University
             </a>
-            # <p style="margin-top: 5px; color: #666; font-size: 1rem;">
-            #    联合研发：急性缺血性卒中 (AIS) 预后评估系统
-            # </p>
         </div>
         """, 
         unsafe_allow_html=True
