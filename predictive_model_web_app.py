@@ -68,8 +68,8 @@ def user_input_features():
     treatment_val = st.sidebar.radio("Treatment_arms", [0, 1], format_func=lambda x: "Intervention (1)" if x==1 else "Control (0)")
     nihss_adm = st.sidebar.number_input('NIHSS_admission', 0, 42, 12)
     iv_throm_val = st.sidebar.radio("Intravenous Thrombolysis", [0, 1], format_func=lambda x: "YES (1)" if x==1 else "No (0)")
-    nihss_rate = st.sidebar.slider('NIHSS_rate_day7', 0, 100, 50)
-    gcs_rate = st.sidebar.slider('GCS_rate_day7', 0, 100, 80)
+    nihss_rate = st.sidebar.slider('NIHSS_pct_change', 0, 100, 50)
+    gcs_rate = st.sidebar.slider('GCS_pct_change', 0, 100, 80)
     lesion_val = st.sidebar.radio("Visible_cerebral_infarction_lesion", [0, 1], format_func=lambda x: "YES (1)" if x==1 else "NO (0)")
 
     data = {
