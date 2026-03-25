@@ -7,6 +7,35 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, roc_curve
 import os
 import pickle
+
+# --- 0. 顶部 Logo 和 单位名称 ---
+# 创建两列，第一列放 Logo，第二列放名称
+# 可以调整宽度比例，例如 [1, 10] 让 Logo 靠左
+col_logo, col_text = st.columns([1, 8])
+
+with col_logo:
+    # 替换为你 Logo 的真实路径或 URL
+    # 如果图片在本地，可以使用 "logo.png"
+    # use_container_width=True 使图片适应列宽
+    st.image("logo.png", width=80) 
+
+with col_text:
+    # 使用 Markdown 语法添加链接，并利用 HTML 调整垂直居中和字体大小
+    # target="_blank" 表示在新标签页打开
+    st.markdown(
+        """
+        <div style="display: flex; align-items: center; height: 80px;">
+            <a href="https://istbi.fudan.edu.cn/ry/gdkyry_aszmpysx_.htm" target="_blank" 
+               style="text-decoration: none; color: #31333F; font-size: 2rem; font-weight: bold;">
+               The Institute of Science and Technology for Brain-inspired Intelligence (ISTBI) / Fudan University
+            </a>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+
+st.divider() # 添加一条分割线，使顶部与主体内容区分开
+
 st.set_page_config(page_title="AIS 90-day Prognosis Tool", layout="wide")
 
 # --- 1. 定义严格的特征顺序 ---
