@@ -24,8 +24,8 @@ def load_tif(path):
         return None
 
 # 加载你的两个 TIF 文件
-logo1 = load_tif("fudan_logo.tif")
-logo2 = load_tif("ISTBI_logo.tif")
+logo1 = load_tif("fudan_logo_red.tif")
+logo2 = load_tif("ISTBI_logo_red.tif")
 
 col_l, col_m, col_r = st.columns([1, 6, 1])
 
