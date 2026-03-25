@@ -32,12 +32,12 @@ with col_m:
         """
         <div style="text-align: center; line-height: 1.2;">
             <a href="https://istbi.fudan.edu.cn/ry/gdkyry_aszmpysx_.htm" target="_blank" 
-               style="text-decoration: none; color: #1E1E1E; font-size: 2.5rem; font-weight: bold;">
+               style="text-decoration: none; color: #1E1E1E; font-size: 3.5rem; font-weight: bold;">
                FuDan University
             </a>
             <span style="margin: 0 15px; color: #CCC; font-size: 1.5rem;">|</span>
             <a href="https://www.university-b.edu" target="_blank" 
-               style="text-decoration: none; color: #1E1E1E; font-size: 2.5rem; font-weight: bold;">
+               style="text-decoration: none; color: #1E1E1E; font-size: 3.5rem; font-weight: bold;">
                The Institute of Science and Technology for Brain-inspired Intelligence (ISTBI)
             </a>
         </div>
