@@ -120,8 +120,15 @@ def user_input_features():
 
 input_df = user_input_features()
 
-st.title("Stroke Outcome Prediction & Explanation")
-
+# st.title("AIS Patients Post-Thrombectomy Outcome Prediction & Explanation")
+st.markdown(
+    """
+    <h1 style='text-align: center; font-size: 40px; color: #1E1E1E; font-family: sans-serif;'>
+        AIS Patients Post-Thrombectomy Outcome Prediction & Explanation
+    </h1>
+    """, 
+    unsafe_allow_html=True
+)
 if st.button("Predict Outcome"):
     all_probs = [m.predict_proba(input_df)[:, 1][0] for m in models]
     avg_prob = np.mean(all_probs)
