@@ -7,3 +7,4 @@ shap
 matplotlib
 scikit-learn
 scipy>=1.11.1,<1.17
+Pillow
