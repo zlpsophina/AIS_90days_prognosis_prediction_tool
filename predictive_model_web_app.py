@@ -7,18 +7,31 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, roc_curve
 import os
 import pickle
-
+from PIL import Image
 # --- 0. 顶部 Logo 和 单位名称 ---
 # 创建两列，第一列放 Logo，第二列放名称
 # 可以调整宽度比例，例如 [1, 10] 让 Logo 靠左
 # --- 0. 顶部双 Logo 与单位名称 ---
 # 创建三列：[左Logo, 中间标题, 右Logo]
 # 比例设为 1:6:1，让标题占据主要空间
+# --- 辅助函数：加载并转换 TIF ---
+def load_tif(path):
+    try:
+        img = Image.open(path)
+        return img
+    except Exception as e:
+        st.error(f"无法加载图片 {path}: {e}")
+        return None
+
+# 加载你的两个 TIF 文件
+logo1 = load_tif("fudan_logo.tif")
+logo2 = load_tif("ISTBI_logo.tif")
+
 col_l, col_m, col_r = st.columns([1, 6, 1])
 
 with col_l:
     # 第一个单位 Logo
-    st.image("fudan_logo.tif", width=70) 
+    st.image(logo1, width=80)
 
 with col_m:
     # 两个单位名称及链接，使用 HTML 实现换行或并排
@@ -44,7 +57,7 @@ with col_m:
 
 with col_r:
     # 第二个单位 Logo
-    st.image("ISTBI_logo.tif", width=70)
+    st.image(logo2, width=80)
 
 
 st.divider() # 添加一条分割线，使顶部与主体内容区分开
