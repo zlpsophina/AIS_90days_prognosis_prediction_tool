@@ -226,7 +226,7 @@ with st.spinner('Updating AUC calculation...'):
 
         for i, m in enumerate(models):
             # 获取当前模型的预测概率
-            p = m.predict_proba(X_to_predict)[:, 1]
+            p = m.predict_proba(X_test_modified[feature_order].astype(float))[:, 1]
             fold_probs.append(p)
             
             # 计算当前折的 AUC
