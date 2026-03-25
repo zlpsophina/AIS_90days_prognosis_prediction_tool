@@ -11,28 +11,41 @@ import pickle
 # --- 0. 顶部 Logo 和 单位名称 ---
 # 创建两列，第一列放 Logo，第二列放名称
 # 可以调整宽度比例，例如 [1, 10] 让 Logo 靠左
-col_logo, col_text = st.columns([1, 8])
+# --- 0. 顶部双 Logo 与单位名称 ---
+# 创建三列：[左Logo, 中间标题, 右Logo]
+# 比例设为 1:6:1，让标题占据主要空间
+col_l, col_m, col_r = st.columns([1, 6, 1])
 
-with col_logo:
-    # 替换为你 Logo 的真实路径或 URL
-    # 如果图片在本地，可以使用 "logo.png"
-    # use_container_width=True 使图片适应列宽
-    st.image("logo.png", width=80) 
+with col_l:
+    # 第一个单位 Logo
+    st.image("fudan_logo.tif", width=70) 
 
-with col_text:
-    # 使用 Markdown 语法添加链接，并利用 HTML 调整垂直居中和字体大小
-    # target="_blank" 表示在新标签页打开
+with col_m:
+    # 两个单位名称及链接，使用 HTML 实现换行或并排
     st.markdown(
         """
-        <div style="display: flex; align-items: center; height: 80px;">
+        <div style="text-align: center; line-height: 1.2;">
             <a href="https://istbi.fudan.edu.cn/ry/gdkyry_aszmpysx_.htm" target="_blank" 
-               style="text-decoration: none; color: #31333F; font-size: 2rem; font-weight: bold;">
-               The Institute of Science and Technology for Brain-inspired Intelligence (ISTBI) / Fudan University
+               style="text-decoration: none; color: #1E1E1E; font-size: 1.8rem; font-weight: bold;">
+               The Institute of Science and Technology for Brain-inspired Intelligence (ISTBI)
             </a>
+            <span style="margin: 0 15px; color: #CCC; font-size: 1.5rem;">|</span>
+            <a href="https://www.university-b.edu" target="_blank" 
+               style="text-decoration: none; color: #1E1E1E; font-size: 1.8rem; font-weight: bold;">
+               FuDan University
+            </a>
+            # <p style="margin-top: 5px; color: #666; font-size: 1rem;">
+            #    联合研发：急性缺血性卒中 (AIS) 预后评估系统
+            # </p>
         </div>
         """, 
         unsafe_allow_html=True
     )
+
+with col_r:
+    # 第二个单位 Logo
+    st.image("ISTBI_logo.tif", width=70)
+
 
 st.divider() # 添加一条分割线，使顶部与主体内容区分开
 
